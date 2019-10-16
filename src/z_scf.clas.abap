@@ -302,7 +302,7 @@ IF lt_code[] IS NOT INITIAL.
   APPEND ls_fieldcat TO lt_fieldcat.
 
   ls_fieldcat-fieldname = 'LV_METHOD'.
-  ls_fieldcat-seltext_m = 'Method/TRFN/TRFN'.
+  ls_fieldcat-seltext_m = 'Method/TRFN/DTP'.
   APPEND ls_fieldcat TO lt_fieldcat.
 
   ls_fieldcat-fieldname = 'LV_LINE'.
