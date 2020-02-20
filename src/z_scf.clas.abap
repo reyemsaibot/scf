@@ -1,102 +1,143 @@
-class Z_SCF definition
-  public
-  final
-  create public .
+"! <p class="shorttext synchronized" lang="en">Source Code Finder</p>
+CLASS z_scf DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
 
-public section.
+PUBLIC SECTION.
 
-  types:
-    TYT_STRING type STANDARD TABLE OF STRING with default key .
+  TYPES: "! <p class="shorttext synchronized" lang="en">Table of strings</p>
+    tyt_string TYPE STANDARD TABLE OF string WITH DEFAULT KEY .
 
-  class-methods RUN
-    importing
-      !I_METHODS type BOOLEAN
-      !I_DTP type BOOLEAN
-      !I_TRFN type BOOLEAN
-      !I_PATTERN type TYT_STRING
-      !I_ENHO type BOOLEAN .
-protected section.
-private section.
+  "! <p class="shorttext synchronized" lang="en">Search for Source Code in TRFN, DTPs, Methods</p>
+  "!
+  "! @parameter i_methods | <p class="shorttext synchronized" lang="en">Search Methods</p>
+  "! @parameter i_dtp     | <p class="shorttext synchronized" lang="en">Search DTPs</p>
+  "! @parameter i_trfn    | <p class="shorttext synchronized" lang="en">Search Transformations</p>
+  "! @parameter i_enho    | <p class="shorttext synchronized" lang="en">Search Enhancements</p>
+  CLASS-METHODS run
+    IMPORTING
+      !i_methods TYPE boolean
+      !i_dtp     TYPE boolean
+      !i_trfn    TYPE boolean
+      !i_pattern TYPE tyt_string
+      !i_enho    TYPE boolean .
+PROTECTED SECTION.
+PRIVATE SECTION.
 
-  types:
+  TYPES: "! <p class="shorttext synchronized" lang="en">Structure of code line output</p>
     BEGIN OF ty_code,
-        lv_class  TYPE string,
-        lv_method TYPE string,
-        lv_line   TYPE i,
-        lv_code   TYPE string,
-        lv_pattern type c length 75,
-       END OF ty_code .
-  types:
-    tyt_code TYPE STANDARD TABLE OF ty_code WITH DEFAULT KEY .
-  types:
-    begin of ty_report,
-          row type string,
-         end of ty_report .
-  types:
-    tyt_report type STANDARD TABLE OF ty_report .
+        lv_class   TYPE string,
+        lv_method  TYPE string,
+        lv_line    TYPE i,
+        lv_code    TYPE string,
+        lv_pattern TYPE c LENGTH 75,
+    END OF ty_code .
 
-  class-methods GET_CODE
-    importing
-      !IT_REPORT type TYT_REPORT
-      !I_METHOD type SEOCPDKEY
-      !I_PATTERN type TYT_STRING
-    returning
-      value(RT_CODE) type TYT_CODE .
-  class-methods GET_OUTPUT
-    importing
-      !IT_TABLE type STANDARD TABLE
-      !IT_DESCRIPTION type SLIS_T_FIELDCAT_ALV .
-  class-methods TRFN
-    Importing
-      !I_pattern type tyt_string
-    Returning
-      value(rt_code) type tyt_code.
-  class-methods METHODS
-    importing
-      !I_VALUE type STRING
-      !I_PATTERN type TYT_STRING
-    returning
-      value(RT_CODE) type TYT_CODE .
-  class-methods READ_REPORT
-    importing
-      !IT_METHODS type STANDARD TABLE
-      !I_PATTERN type TYT_STRING
-    returning
-      value(RT_CODE) type TYT_CODE .
-  class-methods DTP
-    importing
-      !I_PATTERN type TYT_STRING
-    returning
-      value(RT_CODE) type TYT_CODE .
+  TYPES: "! <p class="shorttext synchronized" lang="en">Table of code line output</p>
+    tyt_code TYPE STANDARD TABLE OF ty_code WITH DEFAULT KEY .
+
+  TYPES: "! <p class="shorttext synchronized" lang="en"></p>
+    BEGIN OF ty_report,
+          row TYPE string,
+    END OF ty_report .
+
+  TYPES: "! <p class="shorttext synchronized" lang="en">Table of</p>
+    tyt_report TYPE STANDARD TABLE OF ty_report .
+
+  "! <p class="shorttext synchronized" lang="en">Get ABAP Code</p>
+  "!
+  "! @parameter IT_REPORT | <p class="shorttext synchronized" lang="en">ABAP Report</p>
+  "! @parameter I_METHOD  | <p class="shorttext synchronized" lang="en">Method</p>
+  "! @parameter I_PATTERN | <p class="shorttext synchronized" lang="en">Search Pattern</p>
+  "! @parameter RT_CODE   | <p class="shorttext synchronized" lang="en">Return found Code Lines</p>
+  CLASS-METHODS get_code
+    IMPORTING
+      !it_report TYPE tyt_report
+      !i_method  TYPE seocpdkey
+      !i_pattern TYPE tyt_string
+    RETURNING
+      VALUE(rt_code) TYPE tyt_code .
+
+  "! <p class="shorttext synchronized" lang="en">Get Output ALV GRID</p>
+  "!
+  "! @parameter IT_TABLE       | <p class="shorttext synchronized" lang="en">Output</p>
+  "! @parameter IT_DESCRIPTION | <p class="shorttext synchronized" lang="en">Description of Columns</p>
+  CLASS-METHODS get_output
+    IMPORTING
+      !it_table       TYPE STANDARD TABLE
+      !it_description TYPE slis_t_fieldcat_alv .
+
+  "! <p class="shorttext synchronized" lang="en">Search Transformations</p>
+  "!
+  "! @parameter I_pattern | <p class="shorttext synchronized" lang="en">Search Pattern</p>
+  "! @parameter rt_code   | <p class="shorttext synchronized" lang="en">Return founded code lines</p>
+  CLASS-METHODS trfn
+    IMPORTING
+      !i_pattern TYPE tyt_string
+    RETURNING
+      VALUE(rt_code) TYPE tyt_code.
+
+  "! <p class="shorttext synchronized" lang="en">Get Method Sourcecode</p>
+  "!
+  "! @parameter i_value   | <p class="shorttext synchronized" lang="en"></p>
+  "! @parameter I_pattern | <p class="shorttext synchronized" lang="en">Search Pattern</p>
+  "! @parameter RT_CODE   | <p class="shorttext synchronized" lang="en">Return founded code lines</p>
+  CLASS-METHODS methods
+    IMPORTING
+      !i_value   TYPE string
+      !i_pattern TYPE tyt_string
+    RETURNING
+      VALUE(rt_code) TYPE tyt_code .
+
+  "! <p class="shorttext synchronized" lang="en">Read ABAP Report</p>
+  "!
+  "! @parameter IT_METHODS | <p class="shorttext synchronized" lang="en">Table with all ABAP source code</p>
+  "! @parameter I_PATTERN  | <p class="shorttext synchronized" lang="en">Search Pattern</p>
+  "! @parameter RT_CODE    | <p class="shorttext synchronized" lang="en">Return founded code lines</p>
+  CLASS-METHODS read_report
+    IMPORTING
+      !it_methods TYPE STANDARD TABLE
+      !i_pattern  TYPE tyt_string
+    RETURNING
+      VALUE(rt_code) TYPE tyt_code .
+
+  "! <p class="shorttext synchronized" lang="en">Get DTP Sourcecode</p>
+  "!
+  "! @parameter I_PATTERN  | <p class="shorttext synchronized" lang="en">Search Pattern</p>
+  "! @parameter RT_CODE    | <p class="shorttext synchronized" lang="en">Return founded code lines</p>
+  CLASS-METHODS dtp
+    IMPORTING
+      !i_pattern TYPE tyt_string
+    RETURNING
+      VALUE(rt_code) TYPE tyt_code .
+
 ENDCLASS.
 
-
-
-CLASS Z_SCF IMPLEMENTATION.
-
+CLASS z_scf IMPLEMENTATION.
 
 METHOD dtp.
 
-DATA: lt_dtprule TYPE mch_t_sourcecode,
-      ls_dtprule type ref to mch_s_sourcecode,
-      ls_pattern type ref to string,
-      searchpattern    type string,
-      go_dtp     TYPE REF TO cl_rsbk_dtp,
-      lo_filter  TYPE REF TO cl_rsbc_filter,
-      ls_code    TYPE ty_code,
-      lt_code    TYPE tyt_code.
+DATA: lt_dtprule       TYPE mch_t_sourcecode,
+      ls_dtprule       TYPE REF TO mch_s_sourcecode,
+      ls_pattern       TYPE REF TO string,
+      lv_searchpattern TYPE string,
+      lo_dtp           TYPE REF TO cl_rsbk_dtp,
+      lo_filter        TYPE REF TO cl_rsbc_filter,
+      ls_code          TYPE ty_code,
+      lt_code          TYPE tyt_code.
 
 SELECT DISTINCT dtp
   FROM rsbkdtp
-  INTO TABLE @data(lt_dtps)
+  INTO TABLE @DATA(lt_dtps)
   WHERE objvers = @rs_c_objvers-active.
 
 LOOP AT lt_dtps ASSIGNING FIELD-SYMBOL(<ls_dtp>).
   "Get DTP object
-  go_dtp = cl_rsbk_dtp=>factory( i_dtp = <ls_dtp>-dtp ).
+  lo_dtp = cl_rsbk_dtp=>factory( i_dtp = <ls_dtp>-dtp ).
   "Get Filter
   TRY.
-    lo_filter = go_dtp->get_obj_ref_filter( ).
+    lo_filter = lo_dtp->get_obj_ref_filter( ).
     "Get source code
     APPEND LINES OF lo_filter->n_t_dtprule TO lt_dtprule.
     LOOP AT i_pattern ASSIGNING FIELD-SYMBOL(<ls_pattern>).
@@ -117,11 +158,11 @@ rt_code = lt_code.
 ENDMETHOD.
 
 
-method GET_CODE.
+METHOD get_code.
 DATA: ls_code   TYPE ty_code,
       lt_code   TYPE TABLE OF ty_code.
 
-Loop at i_pattern ASSIGNING FIELD-SYMBOL(<ls_pattern>).
+LOOP AT i_pattern ASSIGNING FIELD-SYMBOL(<ls_pattern>).
   LOOP AT it_report ASSIGNING FIELD-SYMBOL(<ls_report>) WHERE row CP <ls_pattern>.
       ls_code-lv_method  = i_method-cpdname.
       ls_code-lv_class   = i_method-clsname.
@@ -132,10 +173,10 @@ Loop at i_pattern ASSIGNING FIELD-SYMBOL(<ls_pattern>).
   ENDLOOP.
 ENDLOOP.
 rt_code = lt_code.
-endmethod.
+ENDMETHOD.
 
 
-METHOD GET_OUTPUT.
+METHOD get_output.
 
 DATA: gr_table  TYPE REF TO cl_salv_table,
       dref      TYPE REF TO data,
@@ -165,7 +206,7 @@ ENDTRY.
 ENDMETHOD.
 
 
-method METHODS.
+METHOD methods.
 DATA: lt_methods TYPE tyt_string,
       lv_methods TYPE string,
       ls_ob      TYPE seoclsname,
@@ -180,11 +221,11 @@ SELECT obj_name INTO TABLE lt_obj FROM tadir WHERE pgmid  = 'R3TR'
 LOOP AT lt_obj INTO ls_ob.
   "Get all Methods
   cl_oo_classname_service=>get_all_method_includes( EXPORTING clsname = ls_ob
-                                                    RECEIVING result  = data(lt_result)
+                                                    RECEIVING result  = DATA(lt_result)
                                                     EXCEPTIONS class_not_existing = 1 ).
   CHECK sy-subrc EQ 0.
   LOOP AT lt_result ASSIGNING FIELD-SYMBOL(<ls_result>).
-    SPLIT <ls_result> AT ' ' INTO TABLE data(lt_string).
+    SPLIT <ls_result> AT ' ' INTO TABLE DATA(lt_string).
     LOOP AT lt_string ASSIGNING FIELD-SYMBOL(<ls_string>).
       IF <ls_string> = ''.
         "Leerzeilen überspringen
@@ -204,14 +245,14 @@ IF lt_methods[] IS NOT INITIAL.
   rt_code = read_report( it_methods = lt_methods
                          i_pattern  = i_pattern ).
 ENDIF.
-endmethod.
+ENDMETHOD.
 
 
-method READ_REPORT.
+METHOD read_report.
 DATA: lv_report     TYPE c LENGTH 60,
       lt_string     TYPE TABLE OF string,
       lt_report     TYPE tyt_report,
-      ls_report     type ty_report,
+      ls_report     TYPE ty_report,
       lv_incname    TYPE program,
       lt_code_final TYPE TABLE OF ty_code.
 
@@ -220,10 +261,10 @@ LOOP AT it_methods ASSIGNING FIELD-SYMBOL(<ls_methods>).
   CONCATENATE '' <ls_methods> '' INTO lv_report.
 
   READ REPORT lv_report INTO lt_string.
-  Loop at lt_string ASSIGNING FIELD-SYMBOL(<ls_string>).
+  LOOP AT lt_string ASSIGNING FIELD-SYMBOL(<ls_string>).
     ls_report-row = <ls_string>.
-    Append ls_report TO lt_report.
-  Endloop.
+    APPEND ls_report TO lt_report.
+  ENDLOOP.
   lv_incname = lv_report.
 
   cl_oo_classname_service=>get_method_by_include(
@@ -243,11 +284,11 @@ LOOP AT it_methods ASSIGNING FIELD-SYMBOL(<ls_methods>).
                                       i_pattern = i_pattern ).
 
   APPEND LINES OF lt_code TO lt_code_final.
-  Clear: lt_report.
+  CLEAR: lt_report.
 
 ENDLOOP.
 rt_code = lt_code_final.
-endmethod.
+ENDMETHOD.
 
 
 METHOD run.
@@ -266,7 +307,7 @@ METHOD run.
 *Tony: "Nur die, die mehrfach verheiratet waren."
 *Kate: "Wieso das?"
 *Tony: "Die anderen können sich welche kaufen."
-data: lt_code type tyt_code,
+DATA: lt_code TYPE tyt_code,
       lt_fieldcat TYPE slis_t_fieldcat_alv,
       ls_fieldcat TYPE slis_fieldcat_alv.
 
@@ -284,12 +325,9 @@ IF i_dtp = rs_c_true.
   lt_code = dtp( i_pattern ).
 ENDIF.
 
-if i_trfn = rs_c_true.
+IF i_trfn = rs_c_true.
   lt_code = trfn( i_pattern ).
-Endif.
-
-
-
+ENDIF.
 
 IF lt_code[] IS NOT INITIAL.
 
@@ -302,7 +340,7 @@ IF lt_code[] IS NOT INITIAL.
   APPEND ls_fieldcat TO lt_fieldcat.
 
   ls_fieldcat-fieldname = 'LV_METHOD'.
-  ls_fieldcat-seltext_m = 'Method/TRFN/DTP'.
+  ls_fieldcat-seltext_m = 'Method/TRFN/TRFN'.
   APPEND ls_fieldcat TO lt_fieldcat.
 
   ls_fieldcat-fieldname = 'LV_LINE'.
@@ -316,16 +354,14 @@ IF lt_code[] IS NOT INITIAL.
   get_output( EXPORTING it_table       = lt_code
                         it_description = lt_fieldcat ).
 
-Else.
+ELSE.
   MESSAGE 'No entry found' TYPE 'I'.
 ENDIF.
-
-
 
 ENDMETHOD.
 
 
-method TRFN.
+METHOD trfn.
 
 TYPES:  BEGIN OF t_trans_lookup_finder,
           targetname TYPE rstran-targetname,
@@ -337,13 +373,13 @@ TYPES:  BEGIN OF t_trans_lookup_finder,
         END OF t_trans_lookup_finder.
 
 DATA: i_lookup_finder        TYPE STANDARD TABLE OF t_trans_lookup_finder,
-      wa_lookup_finder       TYPE ref to t_trans_lookup_finder,
+      wa_lookup_finder       TYPE REF TO t_trans_lookup_finder,
       i_trans_lookup_finder  TYPE STANDARD TABLE OF t_trans_lookup_finder,
       wa_trans_lookup_finder TYPE t_trans_lookup_finder,
       i_trans_final          TYPE STANDARD TABLE OF t_trans_lookup_finder,
       wa_trans_final         TYPE t_trans_lookup_finder,
-      lt_code                type tyt_code,
-      ls_code                type ty_code.
+      lt_code                TYPE tyt_code,
+      ls_code                TYPE ty_code.
 
 SELECT DISTINCT
         infocube
@@ -430,17 +466,17 @@ SORT i_lookup_finder BY targetname sourcename tranid routine line_no.
 
 LOOP AT i_lookup_finder REFERENCE INTO wa_lookup_finder.
   TRANSLATE wa_lookup_finder->line TO UPPER CASE .
-  Loop at i_pattern ASSIGNING FIELD-SYMBOL(<ls_pattern>).
+  LOOP AT i_pattern ASSIGNING FIELD-SYMBOL(<ls_pattern>).
   IF ( wa_lookup_finder->line CP <ls_pattern> ).
     ls_code-lv_class    = wa_lookup_finder->sourcename.
     ls_code-lv_code     = wa_lookup_finder->line.
     ls_code-lv_line     = wa_lookup_finder->line_no.
     ls_code-lv_method   = wa_lookup_finder->tranid.
     ls_code-lv_pattern  = <ls_pattern>.
-    APpend ls_code to lt_code.
+    APPEND ls_code TO lt_code.
   ENDIF.
-  Endloop.
+  ENDLOOP.
 ENDLOOP.
 rt_code = lt_code.
-endmethod.
+ENDMETHOD.
 ENDCLASS.
