@@ -5,7 +5,7 @@
 *&---------------------------------------------------------------------*
 REPORT Z_SCF.
 
-Data: pattern_table type table of string,
+Data: pattern_table type standard table of string with empty key,
       pattern       type c length 75.
 
 SELECTION-SCREEN BEGIN OF BLOCK b1k2 WITH FRAME TITLE text-001.
@@ -23,8 +23,8 @@ Loop at s_patter ASSIGNING FIELD-SYMBOL(<ls_pat>).
   Append '*' && <ls_pat>-low && '*' to pattern_table.
 ENDLOOP.
 
-z_scf=>run( EXPORTING i_methods = p_meth
-                      i_dtp     = p_dtp
-                      i_trfn    = p_trfn
-                      i_enho    = p_enho
-                      i_pattern = pattern_table ).
+zcl_scf=>run( EXPORTING iv_methods = p_meth
+                      iv_dtp     = p_dtp
+                      iv_trfn    = p_trfn
+                      iv_enho    = p_enho
+                      it_pattern = pattern_table[] ).
