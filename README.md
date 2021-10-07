@@ -6,4 +6,4 @@
 
 The Source Code Finder (SCF) searches through ABAP  source code in Methods, Enhancement Implementations, DTPs, and Transformations. You can enter a pattern you want to search.
 
-The pattern can either be a word e.g. customer, or you can add the asterisk (*) to search for all cu* combinations.
+The pattern can either be a word e.g. customer, or you can add the asterisk (\*) to search for all cu\* combinations.
