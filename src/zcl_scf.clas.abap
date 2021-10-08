@@ -126,8 +126,6 @@ CLASS zcl_scf IMPLEMENTATION.
 
     DATA: lt_dtprule       TYPE mch_t_sourcecode,
           ls_dtprule       TYPE REF TO mch_s_sourcecode,
-          ls_pattern       TYPE REF TO string,
-          lv_searchpattern TYPE string,
           lo_dtp           TYPE REF TO cl_rsbk_dtp,
           lo_filter        TYPE REF TO cl_rsbc_filter,
           ls_code          TYPE ty_code,
@@ -184,16 +182,15 @@ CLASS zcl_scf IMPLEMENTATION.
 
   METHOD get_output.
 
-    DATA: gr_table  TYPE REF TO cl_salv_table,
-          dref      TYPE REF TO data,
-          lv_layout TYPE slis_layout_alv.
+    DATA: lo_dref TYPE REF TO data.
+    DATA: lv_layout TYPE slis_layout_alv.
 
     FIELD-SYMBOLS: <fs_table> TYPE STANDARD TABLE.
 
     lv_layout-colwidth_optimize  = rs_c_true.
 
-    CREATE DATA dref LIKE it_table.
-    ASSIGN dref->* TO <fs_table>.
+    CREATE DATA lo_dref LIKE it_table.
+    ASSIGN lo_dref->* TO <fs_table>.
 
     <fs_table> = it_table.
 
@@ -217,7 +214,6 @@ CLASS zcl_scf IMPLEMENTATION.
           lv_methods TYPE string,
           ls_ob      TYPE seoclsname,
           lt_obj     TYPE STANDARD TABLE OF sobj_name,
-          lt_code    TYPE TABLE OF ty_code,
           lv_i       TYPE i VALUE 1.
 
     SELECT obj_name INTO TABLE @lt_obj FROM tadir WHERE pgmid  = 'R3TR'
@@ -234,9 +230,9 @@ CLASS zcl_scf IMPLEMENTATION.
         SPLIT <ls_result> AT ' ' INTO TABLE DATA(lt_string).
         LOOP AT lt_string ASSIGNING FIELD-SYMBOL(<ls_string>).
           IF <ls_string> = ''.
-            "Leerzeilen überspringen
+            "Skip empty line
           ELSEIF lv_i = 3.
-            "Methode sichern
+            "Save method for later use
             lv_methods = <ls_string>.
           ELSE.
             lv_i = lv_i + 1.
@@ -299,20 +295,22 @@ CLASS zcl_scf IMPLEMENTATION.
 
   METHOD run.
 **********************************************************************
-* Author: T.Meyer, extern, Windhoff Software Services, 26.04.2019
+* Author: T.Meyer, https://www.reyemsaibot.com, 26.04.2019
 **********************************************************************
 *
+* Search for specific pattern in several ABAP development objects
 *
 **********************************************************************
 * Change log
 **********************************************************************
 * 26.04.19 TM initial version
 * 23.09.19 TM Change to own class
+* 08.10.21 TM Changes to ABAPLint
 **********************************************************************
 *Kate: "Sagen sie, bauen alle Marines Boote?"
 *Tony: "Nur die, die mehrfach verheiratet waren."
 *Kate: "Wieso das?"
-*Tony: "Die anderen können sich welche kaufen."
+*Tony: "Die anderen koennen sich welche kaufen."
 
     DATA: lt_code     TYPE ty_t_code,
           lt_fieldcat TYPE slis_t_fieldcat_alv,
@@ -370,21 +368,17 @@ CLASS zcl_scf IMPLEMENTATION.
 
   METHOD trfn.
 
-    TYPES: BEGIN OF t_trans_lookup_finder,
+    TYPES: BEGIN OF ty_trans_lookup_finder,
              targetname TYPE rstran-targetname,
              sourcename TYPE rstran-sourcename,
              tranid     TYPE rstran-tranid,
              routine    TYPE rstran-startroutine,
              line_no    TYPE rsaabap-line_no,
              line       TYPE rsaabap-line,
-           END OF t_trans_lookup_finder.
+           END OF ty_trans_lookup_finder.
 
-    DATA: i_lookup_finder        TYPE STANDARD TABLE OF t_trans_lookup_finder,
-          wa_lookup_finder       TYPE REF TO t_trans_lookup_finder,
-          i_trans_lookup_finder  TYPE STANDARD TABLE OF t_trans_lookup_finder,
-          wa_trans_lookup_finder TYPE t_trans_lookup_finder,
-          i_trans_final          TYPE STANDARD TABLE OF t_trans_lookup_finder,
-          wa_trans_final         TYPE t_trans_lookup_finder,
+    DATA: lt_lookup_finder       TYPE STANDARD TABLE OF ty_trans_lookup_finder,
+          lt_trans_lookup_finder TYPE STANDARD TABLE OF ty_trans_lookup_finder,
           lt_code                TYPE ty_t_code,
           ls_code                TYPE ty_code.
 
@@ -395,7 +389,7 @@ CLASS zcl_scf IMPLEMENTATION.
             routine,
             line_no,
             line
-            INTO TABLE @i_lookup_finder FROM
+            INTO TABLE @lt_lookup_finder FROM
             rsupdinfo AS a  INNER JOIN rsupdrout AS b ON a~updid = b~updid
                             INNER JOIN rsaabap AS c ON c~codeid = b~codeid
                             WHERE
@@ -410,7 +404,7 @@ CLASS zcl_scf IMPLEMENTATION.
             c~codeid,
             line_no,
             line
-            INTO TABLE @i_trans_lookup_finder FROM
+            INTO TABLE @lt_trans_lookup_finder FROM
             rstran AS a INNER JOIN rstransteprout AS b
                             ON a~tranid = b~tranid
                         INNER JOIN rsaabap AS c ON b~codeid = c~codeid
@@ -418,7 +412,7 @@ CLASS zcl_scf IMPLEMENTATION.
                             a~objvers = 'A' AND b~objvers = 'A' AND
                             c~objvers = 'A'.
 
-    APPEND LINES OF i_trans_lookup_finder TO i_lookup_finder.
+    APPEND LINES OF lt_trans_lookup_finder TO lt_lookup_finder.
 
 ***Selections for Transformations(start routine)*********************
     SELECT DISTINCT
@@ -428,12 +422,12 @@ CLASS zcl_scf IMPLEMENTATION.
            startroutine,
            line_no,
            line
-           INTO TABLE @i_trans_lookup_finder FROM
+           INTO TABLE @lt_trans_lookup_finder FROM
           rstran AS a INNER JOIN rsaabap AS b ON a~startroutine = b~codeid
                            WHERE
                            a~objvers = 'A' AND b~objvers = 'A'.
 
-    APPEND LINES OF i_trans_lookup_finder TO i_lookup_finder.
+    APPEND LINES OF lt_trans_lookup_finder TO lt_lookup_finder.
 
 ***Selections for Transformations(End routine)***********************
     SELECT DISTINCT
@@ -443,12 +437,12 @@ CLASS zcl_scf IMPLEMENTATION.
            endroutine,
            line_no,
            line
-           INTO TABLE @i_trans_lookup_finder FROM
+           INTO TABLE @lt_trans_lookup_finder FROM
            rstran AS a  INNER JOIN rsaabap AS b ON a~endroutine = b~codeid
                            WHERE
                            a~objvers = 'A' AND b~objvers = 'A'.
 
-    APPEND LINES OF i_trans_lookup_finder TO i_lookup_finder.
+    APPEND LINES OF lt_trans_lookup_finder TO lt_lookup_finder.
 
 ***Selections for Transformations(Expert routine)********************
     SELECT DISTINCT
@@ -458,24 +452,24 @@ CLASS zcl_scf IMPLEMENTATION.
            expert,
            line_no,
            line
-           INTO TABLE @i_trans_lookup_finder FROM
+           INTO TABLE @lt_trans_lookup_finder FROM
            rstran AS a  INNER JOIN rsaabap AS b ON a~expert = b~codeid
                            WHERE
                            a~objvers = 'A' AND b~objvers = 'A'.
 
-    APPEND LINES OF i_trans_lookup_finder TO i_lookup_finder.
+    APPEND LINES OF lt_trans_lookup_finder TO lt_lookup_finder.
 
 ***Extracting records where lookup code is written*******************
-    SORT i_lookup_finder BY targetname sourcename tranid routine line_no.
+    SORT lt_lookup_finder BY targetname sourcename tranid routine line_no.
 
-    LOOP AT i_lookup_finder REFERENCE INTO wa_lookup_finder.
-      TRANSLATE wa_lookup_finder->line TO UPPER CASE .
+    LOOP AT lt_lookup_finder REFERENCE INTO DATA(ls_lookup_finder).
+      TRANSLATE ls_lookup_finder->line TO UPPER CASE.
       LOOP AT it_pattern ASSIGNING FIELD-SYMBOL(<ls_pattern>).
-        IF ( wa_lookup_finder->line CP <ls_pattern> ).
-          ls_code-lv_class    = wa_lookup_finder->sourcename.
-          ls_code-lv_code     = wa_lookup_finder->line.
-          ls_code-lv_line     = wa_lookup_finder->line_no.
-          ls_code-lv_method   = wa_lookup_finder->tranid.
+        IF ( ls_lookup_finder->line CP <ls_pattern> ).
+          ls_code-lv_class    = ls_lookup_finder->sourcename.
+          ls_code-lv_code     = ls_lookup_finder->line.
+          ls_code-lv_line     = ls_lookup_finder->line_no.
+          ls_code-lv_method   = ls_lookup_finder->tranid.
           ls_code-lv_pattern  = <ls_pattern>.
           APPEND ls_code TO lt_code.
         ENDIF.

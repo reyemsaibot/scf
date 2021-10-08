@@ -1,0 +1,23 @@
+{
+  "name": "SCF",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Source Code Finder",
+  "main": "index.js",
+  "scripts": {
+    "lint": "abaplint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reyemsaibot/src.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/reyemsaibot/src/issues"
+  },
+  "homepage": "https://github.com/reyemsaibot/src#readme",
+  "dependencies": {
+    "@abaplint/cli": "^2.79.8"
+  }
+}
