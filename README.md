@@ -1,4 +1,4 @@
-# Source Code Finder
+# Source Code Finder :keyboard: :mag:
 
 [![Updated Badge](https://badges.pufler.dev/updated/reyemsaibot/scf)](https://badges.pufler.dev) [![Created Badge](https://badges.pufler.dev/created/reyemsaibot/scf)](https://badges.pufler.dev)
 
