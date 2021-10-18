@@ -28,7 +28,7 @@ SELECTION-SCREEN BEGIN OF BLOCK b1k3 WITH FRAME TITLE TEXT-002.
 SELECT-OPTIONS: s_patter FOR pattern NO INTERVALS.
 SELECTION-SCREEN END OF BLOCK b1k3.
 
-zcl_scf=>set_search_pattern( conv #( s_patter-low ) ).
+zcl_scf=>set_search_pattern( CONV #( s_patter-low ) ).
 
 zcl_scf=>consider_methods( p_meth ).
 zcl_scf=>consider_amdp_routines( p_amdp ).

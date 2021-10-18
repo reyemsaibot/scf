@@ -32,7 +32,7 @@ CLASS zcl_scf DEFINITION
 
     CLASS-METHODS check_in_methods
       RETURNING
-        VALUE(r_result) TYPE rs_bool.
+        VALUE(rv_result) TYPE rs_bool.
 
     CLASS-METHODS consider_amdp_routines
       IMPORTING
@@ -40,7 +40,7 @@ CLASS zcl_scf DEFINITION
 
     CLASS-METHODS check_amdp_routines
       RETURNING
-        VALUE(r_result) TYPE rs_bool.
+        VALUE(rv_result) TYPE rs_bool.
 
     CLASS-METHODS set_search_pattern
       IMPORTING
@@ -63,15 +63,6 @@ CLASS zcl_scf DEFINITION
     TYPES:
       "! <p class="shorttext synchronized" lang="en">Table of code line output</p>
       ty_t_code TYPE STANDARD TABLE OF ty_code WITH EMPTY KEY.
-
-    TYPES:
-      "! <p class="shorttext synchronized" lang="en">ABAP reports</p>
-      BEGIN OF ty_report,
-        row TYPE string,
-      END OF ty_report.
-
-    TYPES: "! <p class="shorttext synchronized" lang="en">Table of ABAP reports</p>
-      ty_t_report TYPE STANDARD TABLE OF ty_report.
 
     TYPES: "! <p class="shorttext synchronized" lang="en">Table of Data Transfer Processes</p>
       ty_t_dtps TYPE STANDARD TABLE OF rsbkdtpnm WITH DEFAULT KEY.
@@ -166,11 +157,7 @@ CLASS zcl_scf DEFINITION
 
     CLASS-METHODS get_pattern
       RETURNING
-        VALUE(r_result) TYPE string.
-    METHODS _get_amdp_code.
-
-
-
+        VALUE(rv_result) TYPE string.
 
 ENDCLASS.
 
@@ -180,12 +167,12 @@ CLASS zcl_scf IMPLEMENTATION.
 
 
   METHOD check_amdp_routines.
-    r_result = gv_amdp.
+    rv_result = gv_amdp.
   ENDMETHOD.
 
 
   METHOD check_in_methods.
-    r_result = gv_methods.
+    rv_result = gv_methods.
   ENDMETHOD.
 
 
@@ -204,7 +191,9 @@ CLASS zcl_scf IMPLEMENTATION.
 
     LOOP AT _get_all_dpts( ) REFERENCE INTO DATA(ls_dtp).
       TRY.
-          lt_code = VALUE #( BASE lt_code FOR ls_pattern IN it_pattern FOR ls_dtprule IN cl_rsbk_dtp=>factory( i_dtp = ls_dtp->* )->get_obj_ref_filter( )->n_t_dtprule WHERE ( line CP ls_pattern )
+          lt_code = VALUE #( BASE lt_code FOR ls_pattern IN it_pattern
+          FOR ls_dtprule IN cl_rsbk_dtp=>factory( i_dtp = ls_dtp->* )->get_obj_ref_filter( )->n_t_dtprule
+          WHERE ( line CP ls_pattern )
                                                ( lv_method  = ls_dtp->*
                                                  lv_class   = ls_dtprule-field
                                                  lv_line    = ls_dtprule-line_no
@@ -282,7 +271,7 @@ CLASS zcl_scf IMPLEMENTATION.
 
 
   METHOD get_pattern.
-    r_result = gv_pattern.
+    rv_result = gv_pattern.
   ENDMETHOD.
 
 
@@ -504,28 +493,6 @@ CLASS zcl_scf IMPLEMENTATION.
      INTO TABLE @rt_dtps.
 
     DELETE ADJACENT DUPLICATES FROM rt_dtps.
-  ENDMETHOD.
-
-
-  METHOD _get_amdp_code.
-
-*    data(lt_objects) = _get_objects_from_tadir( iv_value       = 'CLAS'
-*                                                iv_object_name = '/BIC/%' ).
-*
-*
-*   loop at lt_objects REFERENCE INTO data(ls_objects).
-*
-*      "Get all Methods
-*      data(lt_result) = cl_oo_classname_service=>get_all_method_includes( EXPORTING clsname = CONV #( ls_objects->* )
-*                                                                          EXCEPTIONS class_not_existing = 1 ).
-*
-*      CHECK sy-subrc = 0.
-
-
-
-
-
-
   ENDMETHOD.
 
 
