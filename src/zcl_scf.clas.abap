@@ -8,156 +8,135 @@ CLASS zcl_scf DEFINITION
   PUBLIC SECTION.
 
     TYPES:
-      "! <p class="shorttext synchronized" lang="en">Table of strings</p>
-      ty_t_string TYPE STANDARD TABLE OF string WITH EMPTY KEY.
+      "! <p class="shorttext synchronized" lang="en"></p>
+    ty_t_string TYPE STANDARD TABLE OF string WITH EMPTY KEY .
 
-    "! <p class="shorttext synchronized" lang="en">Search for Source Code in TRFN, DTPs, Methods</p>
+    "! <p class="shorttext synchronized" lang="en"></p>
     "!
     "! @parameter i_methods | <p class="shorttext synchronized" lang="en">Search Methods</p>
     "! @parameter i_dtp     | <p class="shorttext synchronized" lang="en">Search DTPs</p>
     "! @parameter i_trfn    | <p class="shorttext synchronized" lang="en">Search Transformations</p>
     "! @parameter i_enho    | <p class="shorttext synchronized" lang="en">Search Enhancements</p>
     CLASS-METHODS run
-      IMPORTING
-        !iv_methods TYPE boolean
-        !iv_dtp     TYPE boolean
-        !iv_trfn    TYPE boolean
-        !it_pattern TYPE ty_t_string
-        !iv_enho    TYPE boolean.
+    IMPORTING
+      !iv_methods TYPE boolean
+      !iv_dtp TYPE boolean
+      !iv_trfn TYPE boolean
+      !it_pattern TYPE ty_t_string
+      !iv_enho TYPE boolean.
 
-    CLASS-METHODS
-      consider_methods
-        IMPORTING
-          iv_methods TYPE rs_bool.
-
+    CLASS-METHODS consider_methods
+    IMPORTING
+      !iv_methods TYPE rs_bool .
     CLASS-METHODS check_in_methods
-      RETURNING
-        VALUE(rv_result) TYPE rs_bool.
-
+    RETURNING
+      VALUE(rv_result) TYPE rs_bool .
     CLASS-METHODS consider_amdp_routines
-      IMPORTING
-        iv_amdp TYPE rs_bool.
-
+    IMPORTING
+      !iv_amdp TYPE rs_bool .
     CLASS-METHODS check_amdp_routines
-      RETURNING
-        VALUE(rv_result) TYPE rs_bool.
-
+    RETURNING
+      VALUE(rv_result) TYPE rs_bool .
     CLASS-METHODS set_search_pattern
-      IMPORTING
-        iv_search_pattern TYPE string.
-
-
+    IMPORTING
+      !iv_search_pattern TYPE string .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
     TYPES:
-      "! <p class="shorttext synchronized" lang="en">Structure of code line output</p>
-      BEGIN OF ty_code,
+      "! <p class="shorttext synchronized" lang="en"></p>
+    BEGIN OF ty_code,
         lv_class   TYPE string,
         lv_method  TYPE string,
         lv_line    TYPE i,
         lv_code    TYPE string,
         lv_pattern TYPE string,
-      END OF ty_code.
-
+      END OF ty_code .
     TYPES:
-      "! <p class="shorttext synchronized" lang="en">Table of code line output</p>
-      ty_t_code TYPE STANDARD TABLE OF ty_code WITH EMPTY KEY.
+      "! <p class="shorttext synchronized" lang="en"></p>
+    ty_t_code TYPE STANDARD TABLE OF ty_code WITH EMPTY KEY .
 
-    TYPES: "! <p class="shorttext synchronized" lang="en">Table of Data Transfer Processes</p>
-      ty_t_dtps TYPE STANDARD TABLE OF rsbkdtpnm WITH DEFAULT KEY.
-
+    TYPES:   "! <p class="shorttext synchronized" lang="en">Table of Data Transfer Processes</p>
+    ty_t_dtps TYPE STANDARD TABLE OF rsbkdtpnm WITH DEFAULT KEY .
     TYPES:
-      ty_t_objectlist TYPE STANDARD TABLE OF sobj_name WITH EMPTY KEY.
+    ty_t_objectlist TYPE STANDARD TABLE OF sobj_name WITH EMPTY KEY .
 
-    CONSTANTS: default_customer_space TYPE sobj_name VALUE 'Z%'.
+    CONSTANTS default_customer_space TYPE sobj_name VALUE 'Z%' ##NO_TEXT.
+    CLASS-DATA gv_methods TYPE rs_bool .
+    CLASS-DATA gv_amdp TYPE rs_bool .
+    CLASS-DATA gv_pattern TYPE string .
 
-    CLASS-DATA: gv_methods TYPE rs_bool.
-
-    CLASS-DATA: gv_amdp TYPE rs_bool.
-
-    CLASS-DATA: gv_pattern TYPE string.
-
-
-    "! <p class="shorttext synchronized" lang="en">Get ABAP Code</p>
+    "! <p class="shorttext synchronized" lang="en"></p>
     "!
     "! @parameter IT_REPORT | <p class="shorttext synchronized" lang="en">ABAP Report</p>
     "! @parameter I_METHOD  | <p class="shorttext synchronized" lang="en">Method</p>
     "! @parameter I_PATTERN | <p class="shorttext synchronized" lang="en">Search Pattern</p>
     "! @parameter RT_CODE   | <p class="shorttext synchronized" lang="en">Return found Code Lines</p>
     CLASS-METHODS get_code
-      IMPORTING
-        !it_report     TYPE ty_t_string
-        !is_method     TYPE seop_method_w_include
-      RETURNING
-        VALUE(rt_code) TYPE ty_t_code.
-
-    "! <p class="shorttext synchronized" lang="en">Get Output ALV GRID</p>
+    IMPORTING
+      !it_report TYPE ty_t_string
+      !is_method TYPE seop_method_w_include
+    RETURNING
+      VALUE(rt_code) TYPE ty_t_code .
+    "! <p class="shorttext synchronized" lang="en"></p>
     "!
     "! @parameter IT_TABLE       | <p class="shorttext synchronized" lang="en">Output</p>
     "! @parameter IT_DESCRIPTION | <p class="shorttext synchronized" lang="en">Description of Columns</p>
     CLASS-METHODS get_output
-      IMPORTING
-        !it_table       TYPE STANDARD TABLE
-        !it_description TYPE slis_t_fieldcat_alv.
-
-    "! <p class="shorttext synchronized" lang="en">Search Transformations</p>
+    IMPORTING
+      !it_table TYPE STANDARD TABLE
+      !it_description TYPE slis_t_fieldcat_alv .
+    "! <p class="shorttext synchronized" lang="en"></p>
     "!
     "! @parameter I_pattern | <p class="shorttext synchronized" lang="en">Search Pattern</p>
     "! @parameter rt_code   | <p class="shorttext synchronized" lang="en">Return founded code lines</p>
     CLASS-METHODS trfn
-      IMPORTING
-        !it_pattern    TYPE ty_t_string
-      RETURNING
-        VALUE(rt_code) TYPE ty_t_code.
-
-    "! <p class="shorttext synchronized" lang="en">Get Method Sourcecode</p>
+    IMPORTING
+      !it_pattern TYPE ty_t_string
+    RETURNING
+      VALUE(rt_code) TYPE ty_t_code .
+    "! <p class="shorttext synchronized" lang="en"></p>
     "!
     "! @parameter i_value   | <p class="shorttext synchronized" lang="en"></p>
     "! @parameter I_pattern | <p class="shorttext synchronized" lang="en">Search Pattern</p>
     "! @parameter RT_CODE   | <p class="shorttext synchronized" lang="en">Return founded code lines</p>
     CLASS-METHODS get_code_from_methods
-      IMPORTING
-        iv_type        TYPE trobjtype
-        iv_object_name TYPE sobj_name
-      RETURNING
-        VALUE(rt_code) TYPE ty_t_code.
-
-    "! <p class="shorttext synchronized" lang="en">Read ABAP Report</p>
+    IMPORTING
+      !iv_type TYPE trobjtype
+      !iv_object_name TYPE sobj_name
+    RETURNING
+      VALUE(rt_code) TYPE ty_t_code .
+    "! <p class="shorttext synchronized" lang="en"></p>
     "!
     "! @parameter IT_METHODS | <p class="shorttext synchronized" lang="en">Table with all ABAP source code</p>
     "! @parameter I_PATTERN  | <p class="shorttext synchronized" lang="en">Search Pattern</p>
     "! @parameter RT_CODE    | <p class="shorttext synchronized" lang="en">Return founded code lines</p>
     CLASS-METHODS read_report
-      IMPORTING
-        it_methods     TYPE seop_methods_w_include
-      RETURNING
-        VALUE(rt_code) TYPE ty_t_code.
-
-    "! <p class="shorttext synchronized" lang="en">Get DTP Sourcecode</p>
+    IMPORTING
+      !it_methods TYPE seop_methods_w_include
+    RETURNING
+      VALUE(rt_code) TYPE ty_t_code .
+    "! <p class="shorttext synchronized" lang="en"></p>
     "!
     "! @parameter I_PATTERN  | <p class="shorttext synchronized" lang="en">Search Pattern</p>
     "! @parameter RT_CODE    | <p class="shorttext synchronized" lang="en">Return founded code lines</p>
     CLASS-METHODS dtp
-      IMPORTING
-        !it_pattern    TYPE ty_t_string
-      RETURNING
-        VALUE(rt_code) TYPE ty_t_code.
-
+    IMPORTING
+      !it_pattern TYPE ty_t_string
+    RETURNING
+      VALUE(rt_code) TYPE ty_t_code .
     CLASS-METHODS _get_all_dpts
-      RETURNING
-        VALUE(rt_dtps) TYPE ty_t_dtps.
-
+    RETURNING
+      VALUE(rt_dtps) TYPE ty_t_dtps .
     CLASS-METHODS _get_objects_from_tadir
-      IMPORTING
-        iv_type              TYPE trobjtype
-        iv_object_name       TYPE sobj_name
-      RETURNING
-        VALUE(rt_objectlist) TYPE ty_t_objectlist.
-
+    IMPORTING
+      !iv_type TYPE trobjtype
+      !iv_object_name TYPE sobj_name
+    RETURNING
+      VALUE(rt_objectlist) TYPE ty_t_objectlist .
     CLASS-METHODS get_pattern
-      RETURNING
-        VALUE(rv_result) TYPE string.
+    RETURNING
+      VALUE(rv_result) TYPE string .
 
 ENDCLASS.
 
