@@ -25,6 +25,28 @@ CLASS zcl_scf DEFINITION
         !it_pattern TYPE ty_t_string
         !iv_enho    TYPE boolean.
 
+    CLASS-METHODS
+      consider_methods
+        IMPORTING
+          iv_methods TYPE rs_bool.
+
+    CLASS-METHODS check_in_methods
+      RETURNING
+        VALUE(r_result) TYPE rs_bool.
+
+    CLASS-METHODS consider_amdp_routines
+      IMPORTING
+        iv_amdp TYPE rs_bool.
+
+    CLASS-METHODS check_amdp_routines
+      RETURNING
+        VALUE(r_result) TYPE rs_bool.
+
+    CLASS-METHODS set_search_pattern
+      IMPORTING
+        iv_search_pattern TYPE string.
+
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -35,7 +57,7 @@ CLASS zcl_scf DEFINITION
         lv_method  TYPE string,
         lv_line    TYPE i,
         lv_code    TYPE string,
-        lv_pattern TYPE c LENGTH 75,
+        lv_pattern TYPE string,
       END OF ty_code.
 
     TYPES:
@@ -51,6 +73,21 @@ CLASS zcl_scf DEFINITION
     TYPES: "! <p class="shorttext synchronized" lang="en">Table of ABAP reports</p>
       ty_t_report TYPE STANDARD TABLE OF ty_report.
 
+    TYPES: "! <p class="shorttext synchronized" lang="en">Table of Data Transfer Processes</p>
+      ty_t_dtps TYPE STANDARD TABLE OF rsbkdtpnm WITH DEFAULT KEY.
+
+    TYPES:
+      ty_t_objectlist TYPE STANDARD TABLE OF sobj_name WITH EMPTY KEY.
+
+    CONSTANTS: default_customer_space TYPE sobj_name VALUE 'Z%'.
+
+    CLASS-DATA: gv_methods TYPE rs_bool.
+
+    CLASS-DATA: gv_amdp TYPE rs_bool.
+
+    CLASS-DATA: gv_pattern TYPE string.
+
+
     "! <p class="shorttext synchronized" lang="en">Get ABAP Code</p>
     "!
     "! @parameter IT_REPORT | <p class="shorttext synchronized" lang="en">ABAP Report</p>
@@ -59,9 +96,8 @@ CLASS zcl_scf DEFINITION
     "! @parameter RT_CODE   | <p class="shorttext synchronized" lang="en">Return found Code Lines</p>
     CLASS-METHODS get_code
       IMPORTING
-        !it_report     TYPE ty_t_report
-        !is_method     TYPE seocpdkey
-        !it_pattern    TYPE ty_t_string
+        !it_report     TYPE ty_t_string
+        !is_method     TYPE seop_method_w_include
       RETURNING
         VALUE(rt_code) TYPE ty_t_code.
 
@@ -89,10 +125,10 @@ CLASS zcl_scf DEFINITION
     "! @parameter i_value   | <p class="shorttext synchronized" lang="en"></p>
     "! @parameter I_pattern | <p class="shorttext synchronized" lang="en">Search Pattern</p>
     "! @parameter RT_CODE   | <p class="shorttext synchronized" lang="en">Return founded code lines</p>
-    CLASS-METHODS methods
+    CLASS-METHODS get_code_from_methods
       IMPORTING
-        !iv_value      TYPE string
-        !it_pattern    TYPE ty_t_string
+        iv_type        TYPE trobjtype
+        iv_object_name TYPE sobj_name
       RETURNING
         VALUE(rt_code) TYPE ty_t_code.
 
@@ -103,8 +139,7 @@ CLASS zcl_scf DEFINITION
     "! @parameter RT_CODE    | <p class="shorttext synchronized" lang="en">Return founded code lines</p>
     CLASS-METHODS read_report
       IMPORTING
-        !it_methods    TYPE STANDARD TABLE
-        !it_pattern    TYPE ty_t_string
+        it_methods     TYPE seop_methods_w_include
       RETURNING
         VALUE(rt_code) TYPE ty_t_code.
 
@@ -118,43 +153,65 @@ CLASS zcl_scf DEFINITION
       RETURNING
         VALUE(rt_code) TYPE ty_t_code.
 
+    CLASS-METHODS _get_all_dpts
+      RETURNING
+        VALUE(rt_dtps) TYPE ty_t_dtps.
+
+    CLASS-METHODS _get_objects_from_tadir
+      IMPORTING
+        iv_type              TYPE trobjtype
+        iv_object_name       TYPE sobj_name
+      RETURNING
+        VALUE(rt_objectlist) TYPE ty_t_objectlist.
+
+    CLASS-METHODS get_pattern
+      RETURNING
+        VALUE(r_result) TYPE string.
+    METHODS _get_amdp_code.
+
+
+
+
 ENDCLASS.
+
+
 
 CLASS zcl_scf IMPLEMENTATION.
 
+
+  METHOD check_amdp_routines.
+    r_result = gv_amdp.
+  ENDMETHOD.
+
+
+  METHOD check_in_methods.
+    r_result = gv_methods.
+  ENDMETHOD.
+
+
+  METHOD consider_amdp_routines.
+    gv_amdp = iv_amdp.
+  ENDMETHOD.
+
+
+  METHOD consider_methods.
+    gv_methods = iv_methods.
+  ENDMETHOD.
+
+
   METHOD dtp.
+    DATA: lt_code TYPE ty_t_code.
 
-    DATA: lt_dtprule       TYPE mch_t_sourcecode,
-          ls_dtprule       TYPE REF TO mch_s_sourcecode,
-          lo_dtp           TYPE REF TO cl_rsbk_dtp,
-          lo_filter        TYPE REF TO cl_rsbc_filter,
-          ls_code          TYPE ty_code,
-          lt_code          TYPE ty_t_code.
-
-    SELECT DISTINCT dtp
-      FROM rsbkdtp
-      INTO TABLE @DATA(lt_dtps)
-      WHERE objvers = @rs_c_objvers-active.
-
-    LOOP AT lt_dtps ASSIGNING FIELD-SYMBOL(<ls_dtp>).
-      "Get DTP object
-      lo_dtp = cl_rsbk_dtp=>factory( i_dtp = <ls_dtp>-dtp ).
-      "Get Filter
+    LOOP AT _get_all_dpts( ) REFERENCE INTO DATA(ls_dtp).
       TRY.
-          lo_filter = lo_dtp->get_obj_ref_filter( ).
-          "Get source code
-          APPEND LINES OF lo_filter->n_t_dtprule TO lt_dtprule.
-          LOOP AT it_pattern ASSIGNING FIELD-SYMBOL(<ls_pattern>).
-            LOOP AT lt_dtprule REFERENCE INTO ls_dtprule WHERE line CP <ls_pattern>.
-              ls_code-lv_method  = <ls_dtp>.
-              ls_code-lv_class   = ls_dtprule->field.
-              ls_code-lv_line    = ls_dtprule->line_no.
-              ls_code-lv_code    = ls_dtprule->line.
-              ls_code-lv_pattern = <ls_pattern>.
-              APPEND ls_code TO lt_code.
-            ENDLOOP.
-          ENDLOOP.
-          CLEAR lt_dtprule.
+          lt_code = VALUE #( BASE lt_code FOR ls_pattern IN it_pattern FOR ls_dtprule IN cl_rsbk_dtp=>factory( i_dtp = ls_dtp->* )->get_obj_ref_filter( )->n_t_dtprule WHERE ( line CP ls_pattern )
+                                               ( lv_method  = ls_dtp->*
+                                                 lv_class   = ls_dtprule-field
+                                                 lv_line    = ls_dtprule-line_no
+                                                 lv_code    = ls_dtprule-line
+                                                 lv_pattern = ls_pattern ) ).
+
+
         CATCH cx_rs_access_error.
       ENDTRY.
     ENDLOOP.
@@ -163,20 +220,35 @@ CLASS zcl_scf IMPLEMENTATION.
 
 
   METHOD get_code.
-    DATA: ls_code TYPE ty_code,
-          lt_code TYPE TABLE OF ty_code.
+    DATA(lv_search_pattern) = get_pattern( ).
+    rt_code = VALUE #( BASE rt_code FOR <ls_report> IN it_report WHERE ( table_line CP lv_search_pattern )
+                            ( lv_method  = is_method-cpdkey-cpdname
+                              lv_class   = is_method-cpdkey-clsname
+                              lv_line    = sy-tabix
+                              lv_code    = <ls_report>
+                              lv_pattern = lv_search_pattern ) ).
+  ENDMETHOD.
 
-    LOOP AT it_pattern ASSIGNING FIELD-SYMBOL(<ls_pattern>).
-      LOOP AT it_report ASSIGNING FIELD-SYMBOL(<ls_report>) WHERE row CP <ls_pattern>.
-        ls_code-lv_method  = is_method-cpdname.
-        ls_code-lv_class   = is_method-clsname.
-        ls_code-lv_line    = sy-tabix.
-        ls_code-lv_code    = <ls_report>-row.
-        ls_code-lv_pattern = <ls_pattern>.
-        APPEND ls_code TO lt_code.
-      ENDLOOP.
+
+  METHOD get_code_from_methods.
+    DATA: lt_methods TYPE seop_methods_w_include.
+
+    DATA(lt_objects) = _get_objects_from_tadir( iv_type        = iv_type
+                                                iv_object_name = iv_object_name ).
+
+    LOOP AT lt_objects REFERENCE INTO DATA(ls_objects).
+      "Get all Methods
+      cl_oo_classname_service=>get_all_method_includes( EXPORTING clsname = CONV #( ls_objects->* )
+                                                        RECEIVING result = DATA(lt_seop_methods_w_include)
+                                                        EXCEPTIONS class_not_existing = 1 ).
+
+      CHECK sy-subrc = 0.
+      APPEND LINES OF lt_seop_methods_w_include TO lt_methods.
+      CLEAR lt_seop_methods_w_include.
     ENDLOOP.
-    rt_code = lt_code.
+    IF lt_methods[] IS NOT INITIAL.
+      rt_code = read_report( lt_methods ).
+    ENDIF.
   ENDMETHOD.
 
 
@@ -209,87 +281,24 @@ CLASS zcl_scf IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD methods.
-    DATA: lt_methods TYPE ty_t_string,
-          lv_methods TYPE string,
-          ls_ob      TYPE seoclsname,
-          lt_obj     TYPE STANDARD TABLE OF sobj_name,
-          lv_i       TYPE i VALUE 1.
-
-    SELECT obj_name INTO TABLE @lt_obj FROM tadir WHERE pgmid  = 'R3TR'
-                                                  AND  object = @iv_value
-                                                  AND  obj_name LIKE 'Z%'.
-
-    LOOP AT lt_obj INTO ls_ob.
-      "Get all Methods
-      cl_oo_classname_service=>get_all_method_includes( EXPORTING clsname = ls_ob
-                                                        RECEIVING result  = DATA(lt_result)
-                                                        EXCEPTIONS class_not_existing = 1 ).
-      CHECK sy-subrc = 0.
-      LOOP AT lt_result ASSIGNING FIELD-SYMBOL(<ls_result>).
-        SPLIT <ls_result> AT ' ' INTO TABLE DATA(lt_string).
-        LOOP AT lt_string ASSIGNING FIELD-SYMBOL(<ls_string>).
-          IF <ls_string> = ''.
-            "Skip empty line
-          ELSEIF lv_i = 3.
-            "Save method for later use
-            lv_methods = <ls_string>.
-          ELSE.
-            lv_i = lv_i + 1.
-          ENDIF.
-        ENDLOOP.
-        APPEND lv_methods TO lt_methods.
-        lv_i = 1.
-      ENDLOOP.
-    ENDLOOP.
-
-    IF lt_methods[] IS NOT INITIAL.
-      rt_code = read_report( it_methods = lt_methods
-                             it_pattern = it_pattern ).
-    ENDIF.
+  METHOD get_pattern.
+    r_result = gv_pattern.
   ENDMETHOD.
 
 
   METHOD read_report.
-    DATA: lv_report     TYPE c LENGTH 60,
-          lt_string     TYPE TABLE OF string,
-          lt_report     TYPE ty_t_report,
-          ls_report     TYPE ty_report,
-          lv_incname    TYPE program,
-          lt_code_final TYPE TABLE OF ty_code.
+    DATA: lt_report TYPE ty_t_string.
+    DATA:     lt_code TYPE TABLE OF ty_code.
 
     LOOP AT it_methods ASSIGNING FIELD-SYMBOL(<ls_methods>).
-
-      CONCATENATE '' <ls_methods> '' INTO lv_report.
-
-      READ REPORT lv_report INTO lt_string.
-      LOOP AT lt_string ASSIGNING FIELD-SYMBOL(<ls_string>).
-        ls_report-row = <ls_string>.
-        APPEND ls_report TO lt_report.
-      ENDLOOP.
-      lv_incname = lv_report.
-
-      cl_oo_classname_service=>get_method_by_include(
-        EXPORTING
-          incname             = lv_incname
-          with_enhancements   = rs_c_true
-        RECEIVING
-          mtdkey              = DATA(lv_method)
-        EXCEPTIONS
-          class_not_existing  = 1
-          method_not_existing = 2 ).
-
+      READ REPORT <ls_methods>-incname INTO lt_report.
       CHECK sy-subrc = 0.
+      APPEND LINES OF get_code( it_report = lt_report
+                                is_method = <ls_methods> ) TO lt_code.
 
-      DATA(lt_code) = get_code( it_report = lt_report
-                                is_method  = lv_method
-                                it_pattern = it_pattern ).
-
-      APPEND LINES OF lt_code TO lt_code_final.
       CLEAR: lt_report.
-
     ENDLOOP.
-    rt_code = lt_code_final.
+    rt_code = lt_code.
   ENDMETHOD.
 
 
@@ -316,14 +325,19 @@ CLASS zcl_scf IMPLEMENTATION.
           lt_fieldcat TYPE slis_t_fieldcat_alv,
           ls_fieldcat TYPE slis_fieldcat_alv.
 
-    IF iv_methods = rs_c_true.
-      lt_code = methods( iv_value   = 'CLAS'
-                         it_pattern = it_pattern ).
+    IF check_in_methods( ).
+      APPEND LINES OF get_code_from_methods( iv_type        = 'CLAS'
+                                             iv_object_name = default_customer_space ) TO lt_code.
+    ENDIF.
+
+    IF check_amdp_routines( ).
+      APPEND LINES OF get_code_from_methods( iv_type        = 'CLAS'
+                                             iv_object_name = '/BIC/%' ) TO lt_code.
     ENDIF.
 
     IF iv_enho = rs_c_true.
-      lt_code = methods( iv_value   = 'ENHO'
-                         it_pattern = it_pattern ).
+      APPEND LINES OF get_code_from_methods( iv_type        = 'ENHO'
+                                             iv_object_name = default_customer_space ) TO lt_code.
     ENDIF.
 
     IF iv_dtp = rs_c_true.
@@ -345,7 +359,7 @@ CLASS zcl_scf IMPLEMENTATION.
       APPEND ls_fieldcat TO lt_fieldcat.
 
       ls_fieldcat-fieldname = 'LV_METHOD'.
-      ls_fieldcat-seltext_m = 'Method/TRFN/TRFN'.
+      ls_fieldcat-seltext_m = 'Method/TRFN/DTP'.
       APPEND ls_fieldcat TO lt_fieldcat.
 
       ls_fieldcat-fieldname = 'LV_LINE'.
@@ -363,6 +377,11 @@ CLASS zcl_scf IMPLEMENTATION.
       MESSAGE 'No entry found' TYPE 'I'.
     ENDIF.
 
+  ENDMETHOD.
+
+
+  METHOD set_search_pattern.
+    gv_pattern = iv_search_pattern.
   ENDMETHOD.
 
 
@@ -476,5 +495,46 @@ CLASS zcl_scf IMPLEMENTATION.
       ENDLOOP.
     ENDLOOP.
     rt_code = lt_code.
+  ENDMETHOD.
+
+
+  METHOD _get_all_dpts.
+    SELECT DISTINCT dtp
+     FROM rsbkdtp
+     INTO TABLE @rt_dtps.
+
+    DELETE ADJACENT DUPLICATES FROM rt_dtps.
+  ENDMETHOD.
+
+
+  METHOD _get_amdp_code.
+
+*    data(lt_objects) = _get_objects_from_tadir( iv_value       = 'CLAS'
+*                                                iv_object_name = '/BIC/%' ).
+*
+*
+*   loop at lt_objects REFERENCE INTO data(ls_objects).
+*
+*      "Get all Methods
+*      data(lt_result) = cl_oo_classname_service=>get_all_method_includes( EXPORTING clsname = CONV #( ls_objects->* )
+*                                                                          EXCEPTIONS class_not_existing = 1 ).
+*
+*      CHECK sy-subrc = 0.
+
+
+
+
+
+
+  ENDMETHOD.
+
+
+  METHOD _get_objects_from_tadir.
+    SELECT obj_name
+     FROM tadir
+     INTO TABLE @rt_objectlist
+    WHERE pgmid = 'R3TR'
+      AND object = @iv_type
+      AND obj_name LIKE @iv_object_name.
   ENDMETHOD.
 ENDCLASS.
