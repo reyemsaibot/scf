@@ -30,6 +30,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_AMDP</KEY>
+     <ENTRY>AMDP Transformations</ENTRY>
+     <LENGTH>28</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_DTP</KEY>
      <ENTRY>Data Transfer Process</ENTRY>
      <LENGTH>29</LENGTH>
@@ -37,14 +43,14 @@
     <item>
      <ID>S</ID>
      <KEY>P_ENHO</KEY>
-     <ENTRY>Enhancement</ENTRY>
-     <LENGTH>19</LENGTH>
+     <ENTRY>Customer Enhancements</ENTRY>
+     <LENGTH>29</LENGTH>
     </item>
     <item>
      <ID>S</ID>
      <KEY>P_METH</KEY>
-     <ENTRY>Methods</ENTRY>
-     <LENGTH>15</LENGTH>
+     <ENTRY>Customer Methods</ENTRY>
+     <LENGTH>24</LENGTH>
     </item>
     <item>
      <ID>S</ID>
