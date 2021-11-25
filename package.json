@@ -5,7 +5,8 @@
   "description": "Source Code Finder",
   "main": "index.js",
   "scripts": {
-    "lint": "abaplint"
+    "lint": "abaplint",
+    "merge": "abapmerge -f src/zap_scf.prog.abap -c zap_scf_standalone > zap_scf.abap"
   },
   "repository": {
     "type": "git",
@@ -18,6 +19,7 @@
   },
   "homepage": "https://github.com/reyemsaibot/src#readme",
   "dependencies": {
-    "@abaplint/cli": "^2.79.8"
+    "@abaplint/cli": "^2.79.8",
+    "abapmerge": "^0.14.3"
   }
 }
