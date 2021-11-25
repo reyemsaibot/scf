@@ -16,7 +16,7 @@ jobs:
     - name: Run npm steps
       run: |
         npm install
-        npm run merg
+        npm run merge
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
