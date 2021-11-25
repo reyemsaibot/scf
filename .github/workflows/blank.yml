@@ -12,7 +12,7 @@ jobs:
     - name: abaplint
       uses: abaplint/actions-abaplint@main
     - name: merge
-      
+      run: merge
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
