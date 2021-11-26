@@ -6,19 +6,19 @@
   "main": "index.js",
   "scripts": {
     "lint": "abaplint",
-    "merge": "abapmerge -f /src/zap_scf.prog.abap -c /zap_scf_standalone > zap_scf.abap",
+    "merge": "abapmerge -f src/zap_scf.prog.abap -c zap_scf_standalone > zap_scf.abap",
     "merge.ci": "cp zap_scf.abap ci/zap_scf_standalone.prog.abap"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/reyemsaibot/src.git"
+    "url": "git+https://github.com/reyemsaibot/sfc.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/reyemsaibot/src/issues"
+    "url": "https://github.com/reyemsaibot/scfissues"
   },
-  "homepage": "https://github.com/reyemsaibot/src#readme",
+  "homepage": "https://github.com/reyemsaibot/scf#readme",
   "dependencies": {
     "@abaplint/cli": "^2.79.8",
     "abapmerge": "^0.14.3"
