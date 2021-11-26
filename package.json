@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "abaplint",
-    "merge": "abapmerge -f src/zap_scf.prog.abap -c zap_scf_standalone > zap_scf.abap",
+    "merge": "abapmerge -f /src/zap_scf.prog.abap -c /zap_scf_standalone > /zap_scf.abap",
     "merge.ci": "cp zap_scf.abap ci/zap_scf_standalone.prog.abap"
   },
   "repository": {
@@ -21,6 +21,6 @@
   "homepage": "https://github.com/reyemsaibot/src#readme",
   "dependencies": {
     "@abaplint/cli": "^2.79.8",
-    "abapmerge": "^0.14.3"
+    "@abapmerge": "^0.14.3"
   }
 }
