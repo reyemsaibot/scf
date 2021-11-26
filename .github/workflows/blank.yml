@@ -18,8 +18,13 @@ jobs:
         npm install
         npm run merge
         npm run merge.ci
+    - name: deploy-merged-build
+      if: github.ref == 'refs/heads/main' && github.repository == 'reyemsaibot/scf'
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_API_KEY: ${{ secrets.MY_SECRET }}
+      run: | 
+       chmod +x ./ci/deploy-merged-build.sh
+       ./ci/deploy-merged-build.sh
         
 
       # Runs a single command using the runners shell
