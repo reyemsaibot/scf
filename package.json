@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "lint": "abaplint",
-    "merge": "abapmerge -f src/zap_scf.prog.abap -c zap_scf_standalone > zap_scf.abap"
+    "merge": "abapmerge -f src/zap_scf.prog.abap -c zap_scf_standalone > zap_scf_standalone.prog.abap",
+    "move": "mv zap_scf_standalone.prog.abap standalone/zap_scf_standalone.prog.abap"
   },
   "repository": {
     "type": "git",
