@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "lint": "abaplint",
-    "merge": "abapmerge -f src/zap_scf.prog.abap -c zap_scf_standalone > zap_scf.abap"
+    "merge": "abapmerge -f src/zap_scf.prog.abap -c zap_scf_standalone > zap_scf.abap",
+    "merge.ci": "cp zbw_trfn_tester.abap ci/zbw_trfn_tester.prog.abap"
   },
   "repository": {
     "type": "git",
