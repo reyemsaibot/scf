@@ -17,6 +17,7 @@ jobs:
       run: |
         npm install
         npm run merge
+        npm run merge.ci
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
