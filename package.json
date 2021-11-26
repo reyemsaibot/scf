@@ -11,12 +11,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/reyemsaibot/sfc.git"
+    "url": "git+https://github.com/reyemsaibot/scf.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/reyemsaibot/scfissues"
+    "url": "https://github.com/reyemsaibot/scf#issues"
   },
   "homepage": "https://github.com/reyemsaibot/scf#readme",
   "dependencies": {
